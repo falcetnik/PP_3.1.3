@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>Welcome to Admin page!</h1>
+<div> <!--Users table -->
+    <table>
+        <tr>
+            <td>Id</td>
+            <td>Login</td>
+            <td>Email</td>
+            <td>First Name</td>
+            <td>Last name</td>
+            <td>Roles</td>
+            <td>Delete</td>
+        </tr>
+        <tr th:each="user : ${users}">
+            <td th:text="${user.id}"></td>
+            <td th:text="${user.login}"></td>
+            <td th:text="${user.email}"></td>
+            <td th:text="${user.name}"></td>
+            <td th:text="${user.lastName}"></td>
+            <td>
+                <th:block th:each="role : ${user.getRoles()}">
+                    <span th:text="${role.getRoleName()}"></span>
+                    <span> </span>
+                </th:block>
+            </td>
+            <td>
+                <form th:method="DELETE" th:action="@{/admin/delete}">
+                    <input type="hidden" name = "id" th:value="${user.getId()}">
+                    <input type="submit" value="Delete">
+                </form>
+            </td>
+        </tr>
+    </table>
+</div>
+<br>
+<div> <!--Update user form-->
+    <h2>Update user</h2>
+    <form th:method="patch" th:action="@{/admin/update}" th:object="${user}">
+        Id:<br>
+        <select th:field="*{id}">
+            <option th:each="uid : ${ids}" th:value="${uid}" th:text="${uid}"></option>
+        </select><br>
+        Login:<br>
+        <input type="text" required th:filed="*{login}" name="login"><br>
+        Email:<br>
+        <input type="email" required th:filed="*{email}" name="email"><br>
+        Password:<br>
+        <input type="password" required th:filed="*{password}" name="password"><br>
+        First name:<br>
+        <input type="text" th:filed="*{name}" name="firstName"><br>
+        Last name:<br>
+        <input type="text" th:filed="*{lastName}" name="lastName"><br>
+        <input type="radio" value="ROLE_USER" name="role">User<br>
+        <input type="radio" value="ROLE_ADMIN" name="role">Admin<br>
+        <input type="submit" value="Update">
+    </form>
+</div>
+<br>
+<div> <!--Create user form-->
+    <h2>Create user</h2>
+    <form th:method="post" th:action="@{/admin/create}" th:object="${user}">
+        Login:<br>
+        <input type="text" required th:filed="*{login}" name="login"><br>
+        Email:<br>
+        <input type="email" required th:filed="*{email}" name="email"><br>
+        Password:<br>
+        <input type="password" required th:filed="*{password}" name="password"><br>
+        First name:<br>
+        <input type="text" th:filed="*{name}" name="firstName"><br>
+        Last name:<br>
+        <input type="text" th:filed="*{lastName}" name="lastName"><br>
+        <input type="radio" value="ROLE_USER" name="role">User<br>
+        <input type="radio" value="ROLE_ADMIN" name="role">Admin<br>
+        <input type="submit" value="Create">
+    </form>
+</div>
+<br>
+<div> <!--Delete all-->
+    <form th:method="delete" th:action="@{admin/deleteAll}">
+        <input type="submit" value="Delete all users">
+    </form>
+</div>
+<br>
+<div>
+    <form th:method="post" th:action="@{../logout}">
+        <input type="submit" value="Logout">
+    </form>
+</div>
+<br>
+</body>
+</html>
