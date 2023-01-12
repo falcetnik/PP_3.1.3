@@ -2,30 +2,35 @@ package ru.kata.spring.boot_security.demo.service;
 
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.repository.RoleRepository;
 import ru.kata.spring.boot_security.demo.repository.UserRepository;
 import ru.kata.spring.boot_security.demo.model.User;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
-public class UserServiceImpl implements UserService{
-    private UserRepository userRepository;
+public class UserServiceImpl implements UserService {
+    private final UserRepository userRepository;
 
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
 
-
-    @Autowired
-    public void setRoleRepository(RoleRepository roleRepository) {
-        this.roleRepository = roleRepository;
-    }
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public void setUserRepository(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, @Lazy BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -34,34 +39,14 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public User findByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
-    @Override
-    public User findByLoginOrEmail(String loginOrEmail) throws UsernameNotFoundException {
-        User user;
-        user = userRepository.findByLogin(loginOrEmail);
-        if (user == null) {
-            user = userRepository.findByEmail(loginOrEmail);
-        }
-        return user;
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String nameOrEmail) throws UsernameNotFoundException {
-        User user = findByLogin(nameOrEmail);
+    public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
+        User user = findByLogin(login);
         if (user != null) {
             user.setUserDetailsName(user.getUsername());
-        } else {
-            user = findByEmail(nameOrEmail);
-            if (user != null) {
-                user.setUserDetailsName(user.getEmail());
-            }
         }
         if (user == null) {
             throw new UsernameNotFoundException(
-                    "No user with uch name or email: " + nameOrEmail
+                    "No user with uch name or email: " + login
             );
         }
         Hibernate.initialize(user.getRoles());
@@ -70,25 +55,18 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public void saveUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         roleRepository.saveAll(user.getRoles());
         userRepository.save(user);
+        System.out.println(user);
     }
 
     @Override
     public void updateUser(User user) {
         if (userRepository.existsById(user.getId())) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             saveUser(user);
         }
-    }
-
-    @Override
-    public void deleteAllUsers() {
-        userRepository.deleteAll();
-    }
-
-    @Override
-    public User getUserById(long id) {
-        return userRepository.getById(id);
     }
 
     @Override
@@ -103,6 +81,16 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public List<Long> getAllIds() {
-        return userRepository .getAllIds();
+        return userRepository.getAllIds();
+    }
+
+    @Override
+    public Set<Role> createRoles(String role) {
+        Set<Role> roles = new HashSet<>();
+        roles.add(new Role("ROLE_USER"));
+        if (role.equals("ROLE_ADMIN")) {
+            roles.add(new Role("ROLE_ADMIN"));
+        }
+        return roles;
     }
 }
