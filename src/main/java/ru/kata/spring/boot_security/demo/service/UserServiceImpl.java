@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
         }
         if (user == null) {
             throw new UsernameNotFoundException(
-                    "No user with uch name or email: " + login
+                    "No user with uch name : " + login
             );
         }
         Hibernate.initialize(user.getRoles());
@@ -84,13 +84,4 @@ public class UserServiceImpl implements UserService {
         return userRepository.getAllIds();
     }
 
-    @Override
-    public Set<Role> createRoles(String role) {
-        Set<Role> roles = new HashSet<>();
-        roles.add(new Role("ROLE_USER"));
-        if (role.equals("ROLE_ADMIN")) {
-            roles.add(new Role("ROLE_ADMIN"));
-        }
-        return roles;
-    }
 }

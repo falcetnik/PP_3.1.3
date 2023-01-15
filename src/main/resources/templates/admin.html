@@ -64,9 +64,10 @@
 <br>
 <div> <!--Create user form-->
     <h2>Create user</h2>
-    <form th:method="post" th:action="@{/admin/create}" th:object="${user}">
+    <form th:method="POST" th:action="@{/admin/create}" th:object="${user}">
         Login:<br>
         <input type="text" required th:filed="*{login}" name="login"><br>
+        <div style="color:red" th:if="${#fields.hasErrors('login')}" th:errors="*{login}">0</div>
         Email:<br>
         <input type="email" required th:filed="*{email}" name="email"><br>
         Password:<br>
@@ -79,6 +80,7 @@
         <input type="radio" value="ROLE_ADMIN" name="role">Admin<br>
         <input type="submit" value="Create">
     </form>
+    <iframe name="my_iframe" style="display:none"></iframe>
 </div>
 <div>
     <form th:method="post" th:action="@{../logout}">

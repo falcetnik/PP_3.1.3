@@ -35,6 +35,4 @@ public interface UserService extends UserDetailsService {
 
     @Transactional(readOnly = true)
     List<Long> getAllIds();
-
-    Set<Role> createRoles(String role);
 }
